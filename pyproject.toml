@@ -1,14 +1,13 @@
 [tool.poetry]
-name = "firefox_to_sqlite"
-version = "0.1.0"
-description = "Create a SQLite database from your Firefox data"
+name = "firefox-to-sqlite"
+version = "0.1.1"
+description = "Create an SQLite database from your Firefox data"
 authors = ["Cade Ekblad-Frank <cade@e-f.me>"]
 readme = "README.md"
 
 [tool.poetry.urls]
-Repository = ""
-Documentation = ""
-
+Repository = "https://github.com/cadeef/firefox-to-sqlite"
+Documentation = "https://firefox-to-sqlite.cade.pro"
 
 [tool.poetry.scripts]
 firefox-to-sqlite = 'firefox_to_sqlite.cli:app'
@@ -16,7 +15,7 @@ firefox-to-sqlite = 'firefox_to_sqlite.cli:app'
 [tool.poetry.dependencies]
 python = "^3.11"
 typer = {extras = ["all"], version = "^0.9.0"}
-
+sqlite-utils = "^3.35"
 
 [tool.poetry.group.dev.dependencies]
 pytest-cov = "^4.1.0"
@@ -26,7 +25,9 @@ ruff = "^0.0.278"
 mypy = "^1.4.1"
 devtools = "^0.11.0"
 pygments = "^2.15.1"
-# pytest-mock = "^3.11.1"
+pytest-mock = "^3.11.1"
+pytest-faker = "^2.0.0"
+pyyaml = "^6.0.1"
 
 [tool.poetry.group.docs.dependencies]
 pygments = "^2.15.1"
