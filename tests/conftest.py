@@ -86,6 +86,8 @@ def generate_environment(path: Path, state: dict) -> None:
     installs = state["installs"]
     profiles = state["profiles"]
     profiles_path = path / "Profiles"
+    with Path("tests/config/places_schema.sql").open() as f:
+        places_schema = f.readlines()
 
     # Profiles
     profiles_ini = configparser.ConfigParser()
@@ -124,8 +126,10 @@ def generate_environment(path: Path, state: dict) -> None:
 
         # places.sqlite
         if "places_exists" in profile:
-            # TODO: Create database with places.sqlite schema
             db = Database(profile_path / "places.sqlite")
+            for query in places_schema:
+                # debug(query.rstrip(), db.query(query.rstrip()))
+                db.query(query.rstrip())
             db.enable_wal()
 
     # Dump out profiles_ini

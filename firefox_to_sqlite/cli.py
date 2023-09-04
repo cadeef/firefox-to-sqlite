@@ -58,7 +58,15 @@ def fetch(
 
         try:
             copy2(p.places().db, db)
-            Database(db).disable_wal()
+            firefox_db = Database(db)
+            # Disable WAL
+            firefox_db.disable_wal()
+            # Enable full-text search for moz_places
+            # FIXME: OperationalError('no such table: moz_places')
+            # firefox_db.table("moz_places").enable_fts(["url", "title", "description"])
+            # Add views
+            for view in VIEWS:
+                firefox_db.create_view(view, VIEWS[view])
         except FileNotFoundError:
             print(f":x: {profile}: Places database ({p.places().db}) not found.")
             raise typer.Exit(code=1)
@@ -99,6 +107,43 @@ def list_profiles(
         if ff.profile_largest().name == profile.name:
             status += ", [blue]largest[/blue]"
         print(f"  {status}")
+
+
+VIEWS = {
+    "history": """
+select
+  h.id,
+  h.visit_date as visit_epoch_us,
+  h.visit_type,
+  h.session,
+  h.source,
+  h.place_id,
+  p.origin_id,
+  p.url,
+  p.title
+from
+  moz_historyvisits h
+  left join moz_places p on p.id = h.place_id
+order by
+  visit_date desc
+""",
+    "bookmarks": """
+select * from moz_bookmarks
+""",
+    "downloads": """
+select
+  a.id,
+  a.place_id,
+  a.dateAdded as date_added_epoch_us,
+  a.lastModified as date_modified_epoch_us,
+  a.content as file,
+  p.url as source_url
+from
+  moz_annos a
+  left join moz_places p  on p.id = a.place_id
+where a.anno_attribute_id = (select id from moz_anno_attributes where name == 'downloads/destinationFileURI')
+""",  # noqa: E501
+}
 
 
 if __name__ == "__main__":

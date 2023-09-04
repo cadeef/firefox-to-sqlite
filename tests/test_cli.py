@@ -1,6 +1,9 @@
 import importlib.metadata
 
 import pytest
+
+# from devtools import debug
+from sqlite_utils import Database
 from typer.testing import CliRunner
 
 from firefox_to_sqlite.cli import APP_NAME, app
@@ -33,15 +36,25 @@ def test_version():
     ),
 )
 def test_command_fetch__profile(data_store_simple, profile, success):
+    """
+    Ensure database transformations are successful
+    """
     data_store_path, _ = data_store_simple
     db = data_store_path / "test.db"
     result = cli.invoke(
         app, ["fetch", "--data-store", data_store_path, "--profile", profile, str(db)]
     )
 
+    ff_db = Database(db)
     if success:
         assert db.is_file()
+        # WAL disabled
+        assert ff_db.journal_mode == "delete"
+        # Views exist
+        assert "downloads" in ff_db.view_names()
+        assert "history" in ff_db.view_names()
         assert result.exit_code == 0
+        assert "Database saved" in result.stdout
     else:
         assert result.exit_code == 1
 
