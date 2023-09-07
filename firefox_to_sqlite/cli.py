@@ -128,7 +128,20 @@ order by
   visit_date desc
 """,
     "bookmarks": """
-select * from moz_bookmarks
+select
+  b.id,
+  b.dateAdded as date_added_epoch_us,
+  b.lastModified as last_modified_epoch_us,
+  b.title as bookmark_title,
+  b.fk as place_id,
+  p.origin_id,
+  p.url,
+  p.title
+from
+  moz_bookmarks b
+  left join moz_places p on p.id = b.fk
+order by
+  b.dateAdded desc
 """,
     "downloads": """
 select

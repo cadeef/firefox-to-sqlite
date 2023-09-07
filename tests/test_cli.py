@@ -53,6 +53,7 @@ def test_command_fetch__profile(data_store_simple, profile, success):
         # Views exist
         assert "downloads" in ff_db.view_names()
         assert "history" in ff_db.view_names()
+        assert "bookmarks" in ff_db.view_names()
         assert result.exit_code == 0
         assert "Database saved" in result.stdout
     else:

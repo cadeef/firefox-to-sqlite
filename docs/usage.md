@@ -9,8 +9,30 @@ fields are annotated with `epoch_us`.
 
 ### bookmarks
 
-```sql
+- id
+- date_added_epoch_us
+- last_modified_epoch_us
+- bookmark_title
+- place_id
+- origin_id
+- url
+- title
 
+```sql
+select
+  b.id,
+  b.dateAdded as date_added_epoch_us,
+  b.lastModified as last_modified_epoch_us,
+  b.title as bookmark_title,
+  b.fk as place_id,
+  p.origin_id,
+  p.url,
+  p.title
+from
+  moz_bookmarks b
+  left join moz_places p on p.id = b.fk
+order by
+  b.dateAdded desc
 ```
 
 ### downloads
