@@ -4,7 +4,19 @@
 
 :::{note}
 Firefox stores timestamps (epoch) with a micro-second resolution. Timestamp
-fields are annotated with `epoch_us`.
+columns are annotated with `epoch_us`. You can output more human readable timestamps
+`datetime(<COLUMN> /1000000, 'unixepoch'`.
+
+For instance:
+
+```sql
+select
+  id,
+  datetime(visit_epoch_us /1000000, 'unixepoch') as visit_ts,
+from
+  history
+```
+
 :::
 
 ### bookmarks
