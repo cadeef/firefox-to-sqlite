@@ -15,7 +15,7 @@ firefox-to-sqlite = 'firefox_to_sqlite.cli:app'
 [tool.poetry.dependencies]
 python = "^3.11"
 typer = {extras = ["all"], version = "^0.9.0"}
-sqlite-utils = "^3.35"
+sqlite-utils = "^3.36"
 
 [tool.poetry.group.dev.dependencies]
 pytest-cov = "^4.1.0"
@@ -28,6 +28,7 @@ pygments = "^2.15.1"
 pytest-mock = "^3.11.1"
 pytest-faker = "^2.0.0"
 pyyaml = "^6.0.1"
+sqlite-utils = "^3.36"
 
 [tool.poetry.group.docs.dependencies]
 pygments = "^2.15.1"

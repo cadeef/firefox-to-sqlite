@@ -7,7 +7,10 @@ from enum import Enum
 
 # from devtools import debug
 from pathlib import Path
+from shutil import copy2
 from typing import NamedTuple, Sequence
+
+from sqlite_utils import Database
 
 
 class FirefoxProfileStatus(Enum):
@@ -39,13 +42,9 @@ class FirefoxProfile:
 
     def places(self) -> Places:
         db = self.path / "places.sqlite"
-        # Places = NamedTuple(
-        #     "Places",
-        #     [("last_modified", datetime | None), ("size", int | None), ("db", Path)],
-        # )
         try:
-            modified_ts = db.stat().st_mtime
-            return Places(datetime.fromtimestamp(modified_ts), db.stat().st_size, db)
+            db_stat = db.stat()
+            return Places(datetime.fromtimestamp(db_stat.st_mtime), db_stat.st_size, db)
         except FileNotFoundError:
             return Places(None, None, db)
 
@@ -87,10 +86,6 @@ class Firefox:
             return self._installs  # type:ignore[has-type]
 
         install_config = self.data_store / "installs.ini"
-        # Install = NamedTuple(
-        #     "Install", [("name", str), ("last_used_profile", FirefoxProfile)]
-        # )
-
         if not install_config.is_file():
             raise FileNotFoundError(f"Install config ({install_config}) not found")
 
@@ -166,5 +161,76 @@ def firefox_data_store() -> Path:
         )
 
 
+def copy_and_transform_db(src: Path, dst: Path | None) -> Path:
+    # Don't clobbler
+    if not dst:
+        dst = src.with_suffix(".transform")
+
+    try:
+        copy2(src, dst)
+        firefox_db = Database(dst)
+        # Disable WAL
+        firefox_db.disable_wal()
+        # Enable full-text search for moz_places
+        firefox_db.table("moz_places").enable_fts(["url", "title", "description"])
+        # Add views
+        for view in VIEWS:
+            firefox_db.create_view(view, VIEWS[view])
+    except FileNotFoundError:
+        raise FirefoxToSqliteException(f"Places database ({src}) not found.")
+
+    return dst
+
+
 class FirefoxToSqliteException(Exception):
     """Source Exception"""
+
+
+VIEWS = {
+    "history": """
+select
+  h.id,
+  h.visit_date as visit_epoch_us,
+  h.visit_type,
+  h.session,
+  h.source,
+  h.place_id,
+  p.origin_id,
+  p.url,
+  p.title
+from
+  moz_historyvisits h
+  left join moz_places p on p.id = h.place_id
+order by
+  visit_date desc
+""",
+    "bookmarks": """
+select
+  b.id,
+  b.dateAdded as date_added_epoch_us,
+  b.lastModified as last_modified_epoch_us,
+  b.title as bookmark_title,
+  b.fk as place_id,
+  p.origin_id,
+  p.url,
+  p.title
+from
+  moz_bookmarks b
+  left join moz_places p on p.id = b.fk
+order by
+  b.dateAdded desc
+""",
+    "downloads": """
+select
+  a.id,
+  a.place_id,
+  a.dateAdded as date_added_epoch_us,
+  a.lastModified as date_modified_epoch_us,
+  a.content as file,
+  p.url as source_url
+from
+  moz_annos a
+  left join moz_places p  on p.id = a.place_id
+where a.anno_attribute_id = (select id from moz_anno_attributes where name == 'downloads/destinationFileURI')
+""",  # noqa: E501
+}

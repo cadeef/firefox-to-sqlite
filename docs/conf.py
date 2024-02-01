@@ -47,3 +47,10 @@ myst_enable_extensions = [
     # "substitution",
     # "tasklist",
 ]
+
+# Add link to repo in press theme
+html_theme_options = {
+    "external_links": [
+        ("Github", "https://github.com/cadeef/firefox-to-sqlite"),
+    ],
+}

@@ -1,11 +1,15 @@
 # Usage
 
+## Full-text Search
+
+Full-text search (across url, title, description) is enabled for the `moz_places` table.
+
 ## Views
 
 :::{note}
 Firefox stores timestamps (epoch) with a micro-second resolution. Timestamp
 columns are annotated with `epoch_us`. You can output more human readable timestamps
-`datetime(<COLUMN> /1000000, 'unixepoch'`.
+with `datetime(<COLUMN> /1000000, 'unixepoch')`.
 
 For instance:
 

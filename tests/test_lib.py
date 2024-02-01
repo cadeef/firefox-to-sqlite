@@ -47,7 +47,13 @@ def test_firefox__profile_from_name(data_store_complex, faker):
     assert profile.path == data_store_path / "Profiles" / name
 
 
+def test_copy_and_transform_db():
+    # TODO: Migrate db transformation test from test_cli
+    pass
+
+
 def test_firefox_data_store():
+    # TODO: Verify correct path is offered per platform
     pass
 
 
